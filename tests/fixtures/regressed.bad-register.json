@@ -1,0 +1,36 @@
+{
+  "schema_version": "0.1.0",
+  "generated": "2026-09-16",
+  "obligations": [
+    {
+      "id": "OBL-0001",
+      "client": "Ashton Medical Devices, Inc.",
+      "counterparty": "Meridian Cloud Services Ltd.",
+      "contract_title": "Master Services Agreement",
+      "category": "renewal",
+      "summary": "Auto-renews unless notice given.",
+      "action_required": "Serve non-renewal notice before the notice date.",
+      "obligation_owner": "mutual",
+      "trigger_type": "recurring",
+      "recurrence": "annual",
+      "next_action_date": "2026-11-01",
+      "status": "active",
+      "confidence": "high"
+    },
+    {
+      "id": "OBL-0001",
+      "client": "Bad Row Co.",
+      "counterparty": "Nobody",
+      "contract_title": "Broken Agreement",
+      "category": "evergreen",
+      "summary": "Duplicate id, bad category enum, active with no diary date.",
+      "action_required": "This row should fail the guard.",
+      "obligation_owner": "everyone",
+      "trigger_type": "recurring",
+      "recurrence": "annual",
+      "next_action_date": "31-12-2026",
+      "status": "active",
+      "confidence": "high"
+    }
+  ]
+}

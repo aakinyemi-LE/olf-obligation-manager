@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "olf-obligation-manager",
+  "displayName": "OLF Post-Signature Obligation & Renewal Manager",
+  "version": "0.2.0",
+  "description": "Cowork-facing post-signature obligation and renewal management for an OLF lawyer maintaining a durable register for repeat clients. Picks up where the review-bot leaves off: from an EXECUTED engagement letter or commercial contract it extracts the living obligations \u2014 notice periods, renewals, termination rights, price adjustments, reporting duties, insurance requirements, data obligations, audit rights \u2014 into a store-agnostic register, computes each provision's diary date, and runs a compliance sweep that buckets what needs action (overdue / imminent / upcoming / watch). Surfaces an HTML dashboard console and posts a due-dates digest to the internal OLF team Slack channel, staying silent when nothing is due. Verified deadlines sync to an internal Google Calendar (idempotently), and a verification gate holds unconfirmed rows out of every alert. Internal reminders (Slack digest, internal calendar) may post; client-facing calendar invites and anything outbound to a client or counterparty stay draft-only and need per-item approval. Ships a recurrence roll-forward, a per-client report, and an extraction-accuracy eval harness.",
+  "author": {
+    "name": "Ontra AI \u2014 Legal Engineering"
+  }
+}

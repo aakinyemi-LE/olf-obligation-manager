@@ -1,0 +1,21 @@
+{
+  "_comment": "Notification + calendar config. Recipients = ONE team channel; internal calendar = ONE shared calendar. Fill the *_id fields once, resolved via the connectors.",
+  "slack": {
+    "channel_name": "olf-obligations",
+    "channel_id": "",
+    "post_when_empty": false,
+    "imminent_days": 14,
+    "horizon_days": 60
+  },
+  "calendar": {
+    "provider": "google",
+    "internal_calendar_name": "OLF Obligations",
+    "internal_calendar_id": "",
+    "reminder_days_before": [7, 1],
+    "allow_client_invites": true,
+    "_provider_note": "Google Calendar is wired. Teams/Outlook needs a Microsoft Graph connector added before provider can be 'microsoft'."
+  },
+  "delivery": "on_demand",
+  "auto_post": true,
+  "boundary": "Internal team channel and the shared internal calendar are authorised internal reminders and may auto-create/post. Client-facing calendar invites and any message to a client or counterparty stay draft-only: they require per-item approval and only ever fire from a VERIFIED row."
+}

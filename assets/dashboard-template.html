@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Obligation Register Console</title>
+<!--
+  OLF Post-Signature Obligation & Renewal Manager — dashboard console.
+  Scan-first triage view of the obligation register. Filter by client; KPI tiles
+  and rows recompute on filter. Each row carries a "Your call" control
+  (Done / Escalate / Snooze / Waive + note); "Copy updates to chat" emits a
+  plain-text Register updates block the lawyer pastes back so the plugin mutates
+  the register. Urgency is computed against `as_of` so the console matches the
+  sweep. Per-viewer marks persist in localStorage keyed by obligation id.
+
+  TO POPULATE: replace the JSON in <script id="register-data">.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script id="register-data" type="application/json">
+{
+  "as_of": "2026-09-16",
+  "imminent_days": 14,
+  "horizon_days": 60,
+  "obligations": [
+    {"id":"OBL-0011","client":"Ashton Medical Devices, Inc.","counterparty":"Quill Consulting Group","category":"notice","contract_title":"Professional Services Agreement","clause_ref":"§10.1","action_required":"If continuity is wanted, serve the 30-day extension notice now — the extension window has effectively closed for 30 Sep expiry.","obligation_owner":"client","next_action_date":"2026-08-31","status":"active","trigger_type":"one_time","confidence":"high"},
+    {"id":"OBL-0004","client":"Ashton Medical Devices, Inc.","counterparty":"Meridian Cloud Services Ltd.","category":"insurance","contract_title":"Master Services Agreement","clause_ref":"§14.3","action_required":"Request and check the annual certificate of insurance; confirm cover is at least $10m and current.","obligation_owner":"counterparty","next_action_date":"2026-09-10","status":"active","trigger_type":"recurring","confidence":"high"},
+    {"id":"OBL-0013","client":"Northwind Therapeutics, Inc.","counterparty":"Meadowlark Estates LLC","category":"price_adjustment","contract_title":"Facilities Services Agreement","clause_ref":"§5.3","action_required":"Expect the CPI service-charge adjustment on the 22 Sep anniversary; verify the uplift matches CPI before paying.","obligation_owner":"counterparty","next_action_date":"2026-09-22","status":"active","trigger_type":"recurring","confidence":"medium"},
+    {"id":"OBL-0003","client":"Pembroke Ridge Capital, L.P.","counterparty":"Calder & Rowe Securities LLC","category":"termination","contract_title":"Sell-Side Advisory Engagement Letter","clause_ref":"§8.1","action_required":"If disengaging, serve 30 days notice and diarise the 12-month tail-fee exposure window from the termination date.","obligation_owner":"mutual","next_action_date":"2026-09-25","status":"active","trigger_type":"conditional","confidence":"high"},
+    {"id":"OBL-0008","client":"Northwind Therapeutics, Inc.","counterparty":"Vertex Analytics LLC","category":"renewal","contract_title":"SaaS Subscription Agreement","clause_ref":"§13.2","action_required":"Decide whether to renew; if not, serve non-renewal notice on Vertex at least 30 days before the term end (30 Oct 2026).","obligation_owner":"mutual","next_action_date":"2026-09-30","status":"active","trigger_type":"recurring","confidence":"high"},
+    {"id":"OBL-0007","client":"Ashton Medical Devices, Inc.","counterparty":"Harbourline Logistics Inc.","category":"notice","contract_title":"Supply & Distribution Agreement","clause_ref":"§9.1","action_required":"If continuity is wanted, open renewal negotiations well before expiry — there is no automatic extension.","obligation_owner":"client","next_action_date":"2026-10-02","status":"active","trigger_type":"one_time","confidence":"high"},
+    {"id":"OBL-0006","client":"Pembroke Ridge Capital, L.P.","counterparty":"Sterling Compliance Advisors LLP","category":"reporting","contract_title":"Regulatory Reporting Services Agreement","clause_ref":"§4.2","action_required":"Prepare and deliver the quarterly compliance attestation to Sterling within 15 days of quarter-end.","obligation_owner":"client","next_action_date":"2026-10-15","status":"active","trigger_type":"recurring","confidence":"high"},
+    {"id":"OBL-0010","client":"Northwind Therapeutics, Inc.","counterparty":"Beacon Insurance Brokers Ltd.","category":"insurance","contract_title":"Professional Indemnity Placement Agreement","clause_ref":"§7.2","action_required":"Request and check the annual PI certificate; confirm cover is at least $5m and in force.","obligation_owner":"counterparty","next_action_date":"2026-10-20","status":"active","trigger_type":"recurring","confidence":"high"},
+    {"id":"OBL-0009","client":"Northwind Therapeutics, Inc.","counterparty":"Vertex Analytics LLC","category":"audit","contract_title":"SaaS Subscription Agreement","clause_ref":"§12.1","action_required":"If an audit is wanted this year, book it and give at least 20 business days notice before the annual window closes.","obligation_owner":"client","next_action_date":"2026-11-05","status":"active","trigger_type":"recurring","confidence":"medium"},
+    {"id":"OBL-0001","client":"Ashton Medical Devices, Inc.","counterparty":"Meridian Cloud Services Ltd.","category":"renewal","contract_title":"Master Services Agreement","clause_ref":"§11.2","action_required":"Decide whether to renew; if not, serve written non-renewal notice on Meridian before the notice date or the term auto-extends 12 months.","obligation_owner":"mutual","next_action_date":"2026-11-01","status":"active","trigger_type":"recurring","confidence":"high"},
+    {"id":"OBL-0012","client":"Pembroke Ridge Capital, L.P.","counterparty":"Orion Bank, N.A.","category":"reporting","contract_title":"Credit Agreement","clause_ref":"§6.1","action_required":"Prepare and deliver the Q3 compliance certificate and financials to Orion Bank within 45 days of quarter-end.","obligation_owner":"client","next_action_date":"2026-11-14","status":"active","trigger_type":"recurring","confidence":"high"},
+    {"id":"OBL-0002","client":"Ashton Medical Devices, Inc.","counterparty":"Meridian Cloud Services Ltd.","category":"price_adjustment","contract_title":"Master Services Agreement","clause_ref":"§6.4","action_required":"On receipt of any price-increase notice, verify the uplift does not exceed CPI + 3% and that 45 days notice was given.","obligation_owner":"counterparty","next_action_date":"2026-11-16","status":"active","trigger_type":"conditional","confidence":"medium"},
+    {"id":"OBL-0005","client":"Ashton Medical Devices, Inc.","counterparty":"Meridian Cloud Services Ltd.","category":"data_privacy","contract_title":"Data Processing Agreement","clause_ref":"§5","action_required":"On any termination, issue the deletion/return instruction and obtain written confirmation within 30 days.","obligation_owner":"counterparty","next_action_date":null,"status":"active","trigger_type":"conditional","confidence":"medium"},
+    {"id":"OBL-0014","client":"Pembroke Ridge Capital, L.P.","counterparty":"Orion Bank, N.A.","category":"other","contract_title":"Credit Agreement","clause_ref":"§9.4","action_required":"On any change of control of the fund/borrower, notify Orion Bank in writing within 10 days.","obligation_owner":"client","next_action_date":null,"status":"active","trigger_type":"conditional","confidence":"high"}
+  ]
+}
+</script>
+<style>
+  :root{
+    --bg:#ffffff; --panel:#ffffff; --panel-2:#f5f8f7;
+    --ink:#0d1f1a; --muted:#5f6f6a; --faint:#8a9893; --line:#e4e9e7;
+    --brand:#0a3d2e; --brand-2:#0f5a43; --accent:#10b981; --accent-strong:#059669;
+    --ring:rgba(16,185,129,.28);
+    --overdue:#c8412f; --imminent:#d98218; --upcoming:#0f766e; --watch:#6b7684; --done:#0f7a4d;
+    --overdue-bg:#fdeeeb; --imminent-bg:#fdf3e6; --upcoming-bg:#eaf5f2; --watch-bg:#eef1f3; --done-bg:#e9f6ef;
+    --shadow:0 1px 2px rgba(13,31,26,.04),0 8px 24px rgba(13,31,26,.06);
+  }
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+    --bg:#0a1512; --panel:#10201b; --panel-2:#0d1b17; --ink:#e8f0ed; --muted:#9db0aa;
+    --faint:#7a8c86; --line:#1e332c; --brand:#0f5a43; --brand-2:#12b981;
+    --overdue-bg:#3a1c17; --imminent-bg:#382a14; --upcoming-bg:#12312a; --watch-bg:#1a2530; --done-bg:#123425;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.35);
+  }}
+  :root[data-theme="dark"]{
+    --bg:#0a1512; --panel:#10201b; --panel-2:#0d1b17; --ink:#e8f0ed; --muted:#9db0aa;
+    --faint:#7a8c86; --line:#1e332c; --overdue-bg:#3a1c17; --imminent-bg:#382a14;
+    --upcoming-bg:#12312a; --watch-bg:#1a2530; --done-bg:#123425;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;
+    font:14px/1.55 "Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:1120px;margin:0 auto;padding:28px 20px 72px}
+  .brandbar{display:flex;align-items:center;gap:11px;margin-bottom:22px}
+  .logo{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--brand));
+    display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:15px;
+    box-shadow:var(--shadow)}
+  .brandbar .t{font-weight:700;letter-spacing:-.01em}
+  .brandbar .t small{display:block;font-weight:500;color:var(--faint);font-size:11.5px;letter-spacing:.02em}
+  header h1{font-size:21px;font-weight:700;letter-spacing:-.02em;margin:0 0 3px}
+  header .sub{color:var(--muted);font-size:12.5px;margin-bottom:18px}
+  /* client filter */
+  .filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:18px}
+  .filters .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--faint);
+    margin-right:2px;font-weight:600}
+  .chip{font:inherit;font-size:12.5px;font-weight:500;padding:6px 13px;border-radius:999px;
+    border:1px solid var(--line);background:var(--panel);color:var(--muted);cursor:pointer;
+    transition:.14s;white-space:nowrap;display:inline-flex;align-items:center;gap:7px}
+  .chip:hover{border-color:var(--accent);color:var(--ink)}
+  .chip.on{background:var(--brand);border-color:var(--brand);color:#fff;box-shadow:var(--shadow)}
+  .chip .ct{font-size:11px;opacity:.7;font-variant-numeric:tabular-nums}
+  .chip.on .ct{opacity:.85}
+  /* tiles */
+  .tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+  .tile{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:15px 16px;
+    box-shadow:var(--shadow);position:relative;overflow:hidden}
+  .tile:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--faint)}
+  .tile.overdue:before{background:var(--overdue)} .tile.imminent:before{background:var(--imminent)}
+  .tile.upcoming:before{background:var(--upcoming)} .tile.watch:before{background:var(--watch)}
+  .tile .n{font-size:30px;font-weight:800;line-height:1;letter-spacing:-.02em}
+  .tile .l{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:6px;font-weight:600}
+  .tile.overdue .n{color:var(--overdue)} .tile.imminent .n{color:var(--imminent)}
+  .tile.upcoming .n{color:var(--upcoming)} .tile.watch .n{color:var(--watch)}
+  /* table */
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:var(--shadow)}
+  table{width:100%;border-collapse:collapse}
+  thead th{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--faint);
+    font-weight:700;text-align:left;padding:12px 14px;background:var(--panel-2);border-bottom:1px solid var(--line)}
+  tbody td{padding:13px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr{transition:background .12s}
+  tbody tr:hover{background:var(--panel-2)}
+  .when{white-space:nowrap;font-weight:600;font-variant-numeric:tabular-nums}
+  .when .days{display:block;font-size:11px;color:var(--muted);font-weight:500;margin-top:1px}
+  .edge{border-left:4px solid transparent}
+  .edge.overdue{border-left-color:var(--overdue)} .edge.imminent{border-left-color:var(--imminent)}
+  .edge.upcoming{border-left-color:var(--upcoming)} .edge.watch{border-left-color:var(--watch)}
+  .edge.done{border-left-color:var(--done)}
+  .cat{display:inline-block;font-size:11px;font-weight:600;padding:3px 9px;border-radius:6px;
+    background:var(--upcoming-bg);color:var(--upcoming);white-space:nowrap}
+  .cat.overdue{background:var(--overdue-bg);color:var(--overdue)} .cat.imminent{background:var(--imminent-bg);color:var(--imminent)}
+  .cat.watch{background:var(--watch-bg);color:var(--watch)}
+  .client{font-weight:600}
+  .sub2{color:var(--muted);font-size:12px;margin-top:3px}
+  .pill{display:inline-block;font-size:10.5px;padding:2px 8px;border-radius:999px;border:1px solid var(--line);
+    color:var(--muted);white-space:nowrap}
+  .pill.verify{border-color:var(--imminent);color:var(--imminent);background:var(--imminent-bg)}
+  .pill.unverified{border-color:var(--imminent);color:var(--imminent);background:var(--imminent-bg);font-weight:600}
+  .act{font-size:12.5px;max-width:300px;color:var(--ink)}
+  .rowdone td{opacity:.55}
+  /* your call */
+  .ctl{display:flex;gap:4px;flex-wrap:wrap;align-items:center;min-width:172px}
+  .ctl button{font:inherit;font-size:11px;font-weight:600;padding:4px 9px;border-radius:7px;
+    border:1px solid var(--line);background:var(--panel);color:var(--muted);cursor:pointer;transition:.12s}
+  .ctl button:hover{border-color:var(--accent);color:var(--ink)}
+  .ctl button.on{color:#fff;border-color:transparent}
+  .ctl button.on[data-s="done"]{background:var(--done)}
+  .ctl button.on[data-s="escalate"]{background:var(--overdue)}
+  .ctl button.on[data-s="snooze"]{background:var(--imminent)}
+  .ctl button.on[data-s="waive"]{background:var(--watch)}
+  .ctl input{font:inherit;font-size:11px;padding:4px 8px;border-radius:7px;border:1px solid var(--line);
+    background:var(--panel);color:var(--ink);width:100%;margin-top:3px}
+  .ctl input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--ring)}
+  .bar{display:flex;gap:12px;align-items:center;margin:18px 0 8px;flex-wrap:wrap}
+  .btn{font:inherit;font-weight:600;padding:9px 16px;border-radius:9px;border:1px solid transparent;
+    background:var(--brand);color:#fff;cursor:pointer;box-shadow:var(--shadow);transition:.12s}
+  .btn:hover{background:var(--brand-2)}
+  .note{color:var(--muted);font-size:12px}
+  #out{white-space:pre-wrap;background:var(--panel-2);border:1px solid var(--line);border-radius:10px;
+    padding:14px;margin-top:10px;display:none;font:12px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace}
+  .empty{padding:36px;text-align:center;color:var(--muted)}
+  @media(max-width:760px){.tiles{grid-template-columns:repeat(2,1fr)}.hide-sm{display:none}.act{max-width:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brandbar">
+    <div class="logo">O</div>
+    <div class="t">Ontra · OLF<small>Post-signature obligation manager</small></div>
+  </div>
+  <header>
+    <h1>Obligation register</h1>
+    <div class="sub" id="asof"></div>
+  </header>
+
+  <div class="filters" id="filters"><span class="lbl">Client</span></div>
+  <div class="tiles" id="tiles"></div>
+
+  <div class="card">
+    <table>
+      <thead><tr>
+        <th>Diary date</th><th>Client / counterparty</th><th>Obligation</th>
+        <th class="hide-sm">Owner</th><th>Action needed</th><th>Your call</th>
+      </tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <div class="empty" id="empty" style="display:none">No obligations for this client inside the horizon.</div>
+  </div>
+
+  <div class="bar">
+    <button class="btn" id="copy">Copy updates to chat</button>
+    <span class="note">Draft-only. Your marks stay on this device until you paste them back.</span>
+  </div>
+  <div id="out"></div>
+</div>
+<script>
+(function(){
+  var data=JSON.parse(document.getElementById("register-data").textContent);
+  var asOf=new Date(data.as_of+"T00:00:00");
+  var IMM=data.imminent_days||14, HOR=data.horizon_days||60;
+  var CAT={renewal:"Renewal",notice:"Notice / expiry",termination:"Termination",
+    price_adjustment:"Price adjustment",reporting:"Reporting",insurance:"Insurance",
+    data_privacy:"Data / privacy",audit:"Audit",other:"Other"};
+  // rows not yet lawyer-verified — flagged, and held out of calendar/Slack/client alerts
+  var UNVERIFIED={"OBL-0002":1,"OBL-0005":1,"OBL-0009":1,"OBL-0010":1,"OBL-0012":1,"OBL-0014":1};
+  var KEY="olf-oblig-marks-v2";
+  function marks(){try{return JSON.parse(localStorage.getItem(KEY)||"{}")}catch(e){return{}}}
+  function saveMarks(m){try{localStorage.setItem(KEY,JSON.stringify(m))}catch(e){}}
+  function daysUntil(d){return Math.round((new Date(d+"T00:00:00")-asOf)/864e5);}
+  function bucket(o){
+    var m=marks()[o.id];
+    if(m&&(m.status==="done"||m.status==="waive"))return "done";
+    if(o.status!=="active")return "done";
+    if(!o.next_action_date)return o.trigger_type==="conditional"?"watch":null;
+    var d=daysUntil(o.next_action_date);
+    if(d<0)return "overdue"; if(d<=IMM)return "imminent";
+    if(d<=HOR)return "upcoming"; return null;
+  }
+  var order={overdue:0,imminent:1,upcoming:2,watch:3,done:4};
+
+  var clients=[]; data.obligations.forEach(function(o){if(clients.indexOf(o.client)<0)clients.push(o.client);});
+  clients.sort();
+  var filter="__all__";
+
+  document.getElementById("asof").textContent=
+    "As of "+data.as_of+" · imminent ≤"+IMM+"d · horizon "+HOR+"d · "
+    +data.obligations.length+" tracked obligations · verified rows drive alerts";
+
+  function shortClient(c){return c.replace(/,?\s+(Inc\.|L\.P\.|LLC|LLP|Ltd\.)$/,"");}
+
+  function visibleRows(){
+    return data.obligations.map(function(o){return {o:o,b:bucket(o)};})
+      .filter(function(r){return r.b!==null;})
+      .filter(function(r){return filter==="__all__"||r.o.client===filter;})
+      .sort(function(a,b){
+        if(order[a.b]!==order[b.b])return order[a.b]-order[b.b];
+        var ad=a.o.next_action_date||"9999",bd=b.o.next_action_date||"9999";
+        return ad<bd?-1:ad>bd?1:0;});
+  }
+
+  function renderFilters(){
+    var box=document.getElementById("filters");
+    box.querySelectorAll(".chip").forEach(function(c){c.remove();});
+    function count(client){return data.obligations.filter(function(o){
+      var b=bucket(o); return b&&b!=="done"&&(client==="__all__"||o.client===client);}).length;}
+    function chip(val,label){
+      var el=document.createElement("button");
+      el.className="chip"+(filter===val?" on":"");
+      el.innerHTML=label+' <span class="ct">'+count(val)+'</span>';
+      el.onclick=function(){filter=val;renderAll();};
+      box.appendChild(el);
+    }
+    chip("__all__","All clients");
+    clients.forEach(function(c){chip(c,shortClient(c));});
+  }
+
+  function renderTiles(rows){
+    var counts={overdue:0,imminent:0,upcoming:0,watch:0};
+    rows.forEach(function(r){if(counts[r.b]!==undefined)counts[r.b]++;});
+    var defs=[["overdue","Overdue"],["imminent","Imminent"],["upcoming","Upcoming"],["watch","On watch"]];
+    document.getElementById("tiles").innerHTML=defs.map(function(t){
+      return '<div class="tile '+t[0]+'"><div class="n">'+counts[t[0]]+'</div><div class="l">'+t[1]+'</div></div>';
+    }).join("");
+  }
+
+  function whenCell(o,b){
+    if(!o.next_action_date)return '<span class="muted">—</span><span class="days">no date yet</span>';
+    var d=daysUntil(o.next_action_date);
+    return o.next_action_date+'<span class="days">'+(d<0?("overdue "+(-d)+"d"):("in "+d+"d"))+'</span>';
+  }
+
+  function renderRows(rows){
+    var tb=document.getElementById("rows"); tb.innerHTML="";
+    document.getElementById("empty").style.display=rows.length?"none":"block";
+    var M=marks();
+    rows.forEach(function(r){
+      var o=r.o, mk=M[o.id]||{}, tr=document.createElement("tr");
+      var cb=(r.b==="overdue"||r.b==="imminent"||r.b==="watch")?r.b:"";
+      if(r.b==="done")tr.className="rowdone";
+      tr.innerHTML=
+        '<td class="edge '+r.b+' when">'+whenCell(o,r.b)+'</td>'+
+        '<td><div class="client">'+shortClient(o.client)+'</div><div class="sub2">'+o.counterparty+'</div></td>'+
+        '<td><span class="cat '+cb+'">'+(CAT[o.category]||o.category)+'</span>'+
+          (UNVERIFIED[o.id]?' <span class="pill unverified">unverified</span>':'')+
+          '<div class="sub2">'+o.contract_title+' '+(o.clause_ref||'')+'</div></td>'+
+        '<td class="hide-sm"><span class="pill">'+o.obligation_owner+'</span></td>'+
+        '<td class="act">'+o.action_required+'</td>'+
+        '<td><div class="ctl" data-id="'+o.id+'">'+
+          '<button data-s="done">Done</button>'+
+          '<button data-s="escalate">Escalate</button>'+
+          '<button data-s="snooze">Snooze</button>'+
+          '<button data-s="waive">Waive</button>'+
+          '<input placeholder="add a note" value="'+(mk.note?String(mk.note).replace(/"/g,"&quot;"):"")+'">'+
+        '</div></td>';
+      tb.appendChild(tr);
+      var ctl=tr.querySelector(".ctl");
+      if(mk.status){var b0=ctl.querySelector('button[data-s="'+mk.status+'"]');if(b0)b0.classList.add("on");}
+      ctl.querySelectorAll("button").forEach(function(btn){
+        btn.onclick=function(){
+          var m=marks(); m[o.id]=m[o.id]||{};
+          m[o.id].status=(m[o.id].status===btn.dataset.s)?undefined:btn.dataset.s;
+          saveMarks(m); renderAll();
+        };
+      });
+      ctl.querySelector("input").onchange=function(){
+        var m=marks(); m[o.id]=m[o.id]||{}; m[o.id].note=this.value; saveMarks(m);
+        renderFilters();
+      };
+    });
+  }
+
+  function renderAll(){
+    var rows=visibleRows();
+    renderFilters(); renderTiles(rows); renderRows(rows);
+  }
+  renderAll();
+
+  document.getElementById("copy").onclick=function(){
+    var m=marks(), lines=["Register updates (as of "+data.as_of+")"];
+    data.obligations.forEach(function(o){
+      var mk=m[o.id]; if(!mk||(!mk.status&&!mk.note))return;
+      lines.push("- "+o.id+" ("+shortClient(o.client)+"): "+(mk.status||"note")+(mk.note?" — "+mk.note:""));
+    });
+    if(lines.length===1)lines.push("(no marks yet — use Done / Escalate / Snooze / Waive on a row)");
+    var txt=lines.join("\n"), out=document.getElementById("out");
+    out.style.display="block"; out.textContent=txt;
+    try{navigator.clipboard.writeText(txt);}catch(e){
+      var t=document.createElement("textarea");t.value=txt;document.body.appendChild(t);
+      t.select();try{document.execCommand("copy");}catch(e2){}document.body.removeChild(t);}
+  };
+})();
+</script>
+</body>
+</html>

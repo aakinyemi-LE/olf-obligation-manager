@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-marketplace.json",
+  "name": "olf-obligations",
+  "owner": {
+    "name": "Ontra AI \u2014 Legal Engineering"
+  },
+  "metadata": {
+    "description": "OLF post-signature obligation & renewal management for Claude Cowork. Obligation-first, draft-only.",
+    "version": "0.2.0"
+  },
+  "plugins": [
+    {
+      "name": "olf-obligation-manager",
+      "source": "./",
+      "version": "0.2.0",
+      "description": "Extracts living obligations from executed contracts into a register, computes diary dates, and runs a compliance sweep that posts a due-dates digest to the internal OLF team Slack channel. HTML dashboard console. Internal reminders may post; outbound to clients stays draft-only.",
+      "category": "legal"
+    }
+  ]
+}
